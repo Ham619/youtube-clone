@@ -1,8 +1,10 @@
+// Head.js
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleMenu } from "../utils/appSlice";
 import { YOUTUBE_SEARCH_API } from "../utils/contants";
 import { cacheResults } from "../utils/searchSlice";
+import axios from 'axios';
 
 const Head = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -12,53 +14,41 @@ const Head = () => {
   const searchCache = useSelector((store) => store.search);
   const dispatch = useDispatch();
 
-  /**
-   *  searchCache = {
-   *     "iphone": ["iphone 11", "iphone 14"]
-   *  }
-   *  searchQuery = iphone
-   */
-
+  // Fetch search suggestions from YouTube API
   useEffect(() => {
     const timer = setTimeout(() => {
-      if (searchCache[searchQuery]) {
+      if (searchQuery && searchCache[searchQuery]) {
         setSuggestions(searchCache[searchQuery]);
-      } else {
-        getSearchSugsestions();
+      } else if (searchQuery) {
+        getSearchSuggestions();
       }
     }, 200);
 
-    return () => {
-      clearTimeout(timer);
-    };
+    return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const getSearchSugsestions = async () => {
-    const data = await fetch(YOUTUBE_SEARCH_API + searchQuery);
-    const json = await data.json();
-    console.log(json);
-    console.log(json.items[1].snippet.title);
-    // setSuggestions(json[1].items.snippet.title);
+  const getSearchSuggestions = async () => {
+    try {
+      const { data } = await axios.get(`${YOUTUBE_SEARCH_API}${encodeURIComponent(searchQuery)}`);
+      const suggestionsList = data.items.map(item => item.snippet.title);
+      setSuggestions(suggestionsList);
 
-    // update cache
-    dispatch(
-      cacheResults({
-        // [searchQuery]: json[1],
-      })
-    );
+      // Update cache with new results
+      dispatch(cacheResults({ [searchQuery]: suggestionsList }));
+    } catch (error) {
+      console.error("Error fetching search suggestions:", error);
+    }
   };
 
   const toggleMenuHandler = () => {
     dispatch(toggleMenu());
   };
 
-  // console.log(suggestions);
-
   return (
     <div className="grid grid-flow-col p-5 m-2 shadow-lg">
       <div className="flex col-span-1">
         <img
-          onClick={() => toggleMenuHandler()}
+          onClick={toggleMenuHandler}
           className="h-8 cursor-pointer"
           alt="menu"
           src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAOEAAADhCAMAAAAJbSJIAAAARVBMVEX///8jHyAgHB0OBQgMAAWlpKQpJSaenZ309PUAAAAIAAD8/Pz5+fna2tqop6dvbW1oZmevrq4tKivFxMQYExRiYGC+vr7Dc4WrAAABB0lEQVR4nO3cS3LCMBAFQGIIIBPbhN/9jxqSyiIsTUnlydB9g1eSNV5MvdUKAAAAAAAAAAAAAAAAXtEwvscwDk3yHabSb2Loy/TRIOHUv8XRH+sHHMrSqR6U+hd1jHSE90P8lHC2/Lc0/0vzMy3WMdynxaFBwu+Jv4uh0cQHAAAAAAAAAIB59jG0ijdcT9sYTtcmK0PncumiuJRz/YD7bbf0ut4f3br+GvQt2PblrXrC3WbpUA/6sXrC/GeY/zvM/5aGmofHZiu0S//M/GoVDwAAAAAAAAAAZsjeuRerN1HL7hPy95fm76DNnzD/Lc3/0rxAJ3v+Xn0AAAAAAAAAAAAAAAD4T74AYhs1O+vt3ioAAAAASUVORK5CYII="
@@ -85,14 +75,14 @@ const Head = () => {
             🔍
           </button>
         </div>
-        {showSuggestions && (
+        {showSuggestions && searchQuery && (
           <div className="fixed bg-white py-2 px-2 w-[37rem] shadow-lg rounded-lg border border-gray-100">
             <ul>
-              {/* {suggestions.map((s) => (
-                <li key={s} className="py-2 px-3 shadow-sm hover:bg-gray-100">
-                  🔍 {s}
+              {suggestions.map((suggestion, index) => (
+                <li key={index} className="py-2 px-3 shadow-sm hover:bg-gray-100">
+                  {suggestion}
                 </li>
-              ))} */}
+              ))}
             </ul>
           </div>
         )}
