@@ -1,5 +1,7 @@
+// App.js
+import React from "react";
 import { Provider } from "react-redux";
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import "./App.css";
 import Body from "./components/Body";
 import Demo from "./components/Demo";
@@ -9,53 +11,22 @@ import MainContainer from "./components/MainContainer";
 import WatchPage from "./components/WatchPage";
 import store from "./utils/store";
 
-const appRouter = createBrowserRouter([
-  {
-    path: "/",
-    element: <Body />,
-    children: [
-      {
-        path: "/",
-        element: <MainContainer />,
-      },
-      {
-        path: "watch",
-        element: <WatchPage />,
-      },
-      {
-        path: "demo",
-        element: (
-          <>
-            <Demo />
-            <Demo2 />
-          </>
-        ),
-      },
-    ],
-  },
-]);
-
 function App() {
   return (
     <Provider store={store}>
-      <div>
-        <Head />
-        <RouterProvider router={appRouter} />
-
-        {/**
-         *
-         * Head
-         * Body
-         *  Sidebar
-         *    MenuItems
-         *  MainContainer
-         *    ButtonsList
-         *    VideoContainer
-         *      VideoCard
-         *
-         *
-         */}
-      </div>
+      {/* Wrap the entire application with BrowserRouter */}
+      <Router>
+        <div>
+          <Head />
+          <Routes>
+            <Route path="/" element={<Body />}>
+              <Route index element={<MainContainer />} />
+              <Route path="watch" element={<WatchPage />} />
+              <Route path="demo" element={<><Demo /><Demo2 /></>} />
+            </Route>
+          </Routes>
+        </div>
+      </Router>
     </Provider>
   );
 }

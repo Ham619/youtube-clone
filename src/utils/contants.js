@@ -3,7 +3,7 @@
 // require('dotenv').config();
 
 // Ensure the GOOGLE_API_KEY environment variable is set
-const GOOGLE_API_KEY = "AIzaSyBGdDJVo7aDT6C8Cm8J0UU8mTGwF0EIE2E";
+const GOOGLE_API_KEY = "AIzaSyDpOm-WCUMhpNNdwDlvc5PX5qEJw6oZlzU";
 
 export const LIVE_CHAT_COUNT = 25;
 
